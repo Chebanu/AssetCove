@@ -1,9 +1,9 @@
-using System.Reflection;
 using AssetCove.Domain.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
-public partial class Program {
+public partial class Program
+{
     private static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -15,12 +15,9 @@ public partial class Program {
             options.SwaggerDoc("v1", new OpenApiInfo
             {
                 Version = "v1",
-                Title = "PassGuardia",
-                Description = "PassGuardia",
+                Title = "AssetCove",
+                Description = "AssetCove",
             });
-
-            var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
         });
 
         builder.Services.AddControllers();
@@ -37,12 +34,10 @@ public partial class Program {
             app.UseSwaggerUI();
         }
 
-        app.UseAuthentication();
-        app.UseAuthorization();
-
+        //app.UseAuthentication();
+        //app.UseAuthorization();
 
         app.MapControllers();
-
 
         await app.RunAsync();
     }
