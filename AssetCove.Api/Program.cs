@@ -1,28 +1,51 @@
+using System.Reflection;
+using AssetCove.Domain.DbContexts;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+public partial class Program {
+    private static async Task Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
 
-builder.Services.AddProblemDetails();
-builder.Services.AddOpenApi();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Version = "v1",
+                Title = "PassGuardia",
+                Description = "PassGuardia",
+            });
 
-var app = builder.Build();
+            var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+        });
 
-app.UseExceptionHandler();
+        builder.Services.AddControllers();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
+        builder.Services.AddDbContext<AssetCoveDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+        var app = builder.Build();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+
+        app.MapControllers();
+
+
+        await app.RunAsync();
+    }
 }
 
-string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
-
-app.MapGet("/weatherforecast", () =>
-{
-    
-})
-.WithName("GetWeatherForecast");
-
-app.MapDefaultEndpoints();
-
-app.Run();
+public partial class Program { }
