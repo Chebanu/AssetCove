@@ -11,15 +11,6 @@ public class UserAsset
     public Guid Id { get; set; }
 
     [Required]
-    [Column(nameof(Name))]
-    public string Name { get; set; }
-
-    [Required]
-    [Column(nameof(Ticker))]
-    [StringLength(5, MinimumLength = 3)]
-    public string Ticker { get; set; }
-
-    [Required]
     [Column(nameof(Amount))]
     public decimal Amount { get; set; }
 
@@ -31,11 +22,11 @@ public class UserAsset
     public DateTime LastUpdatedAt { get; set; }
 
     [ForeignKey(nameof(PortfolioId))]
-    public Portfolio Portfolio { get; set; }
+    public virtual Portfolio Portfolio { get; set; }
 
     [Required]
     [Column(nameof(PortfolioId))]
     public Guid PortfolioId { get; set; }
 
-    public List<AssetTransaction> Transactions { get; set; }
+    public virtual ICollection<AssetTransaction> Transactions { get; set; }
 }

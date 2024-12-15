@@ -11,7 +11,7 @@ public class AssetTransaction
     public Guid Id { get; set; }
 
     [ForeignKey(nameof(UserAssetId))]
-    public UserAsset UserAsset { get; set; }
+    public virtual UserAsset UserAsset { get; set; }
 
     [Required]
     [Column(nameof(UserAssetId))]
@@ -20,6 +20,13 @@ public class AssetTransaction
     [Required]
     [Column(nameof(Amount))]
     public decimal Amount { get; set; }
+
+    [Required]
+    [Column(nameof(AssetDefinitionId))]
+    public Guid AssetDefinitionId { get; set; }
+
+    [ForeignKey(nameof(AssetDefinitionId))]
+    public virtual AssetDefinition AssetDefinition { get; set; }
 
     [Required]
     [Column(nameof(PricePerUnit))]
@@ -32,6 +39,10 @@ public class AssetTransaction
     [Required]
     [Column(nameof(Timestamp))]
     public DateTime Timestamp { get; set; }
+
+    [Required]
+    [Column(nameof(IsRemoved))]
+    public bool IsRemoved { get; set; }
 }
 
 public enum TransactionType

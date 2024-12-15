@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AssetCove.Domain.Migrations
 {
     [DbContext(typeof(AssetCoveDbContext))]
-    [Migration("20241215170650_AddInitialModels")]
+    [Migration("20241215230157_AddInitialModels")]
     partial class AddInitialModels
     {
         /// <inheritdoc />
@@ -25,6 +25,36 @@ namespace AssetCove.Domain.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("AssetCove.Contracts.Models.AssetDefinition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("Id");
+
+                    b.Property<int>("AssetType")
+                        .HasColumnType("int")
+                        .HasColumnName("AssetType");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("Name");
+
+                    b.Property<string>("Ticker")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)")
+                        .HasColumnName("Ticker");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Ticker", "Name", "AssetType")
+                        .IsUnique();
+
+                    b.ToTable("AssetDefinitions");
+                });
+
             modelBuilder.Entity("AssetCove.Contracts.Models.AssetTransaction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -35,6 +65,14 @@ namespace AssetCove.Domain.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("Amount");
+
+                    b.Property<Guid>("AssetDefinitionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("AssetDefinitionId");
+
+                    b.Property<bool>("IsRemoved")
+                        .HasColumnType("bit")
+                        .HasColumnName("IsRemoved");
 
                     b.Property<decimal>("PricePerUnit")
                         .HasColumnType("decimal(18,2)")
@@ -53,6 +91,8 @@ namespace AssetCove.Domain.Migrations
                         .HasColumnName("UserAssetId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AssetDefinitionId");
 
                     b.HasIndex("UserAssetId");
 
@@ -73,6 +113,11 @@ namespace AssetCove.Domain.Migrations
                     b.Property<DateTime>("LastUpdatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("LastUpdatedAt");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Name");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier")
@@ -128,20 +173,9 @@ namespace AssetCove.Domain.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("LastUpdatedAt");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("Name");
-
                     b.Property<Guid>("PortfolioId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("PortfolioId");
-
-                    b.Property<string>("Ticker")
-                        .IsRequired()
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)")
-                        .HasColumnName("Ticker");
 
                     b.HasKey("Id");
 
@@ -152,11 +186,19 @@ namespace AssetCove.Domain.Migrations
 
             modelBuilder.Entity("AssetCove.Contracts.Models.AssetTransaction", b =>
                 {
+                    b.HasOne("AssetCove.Contracts.Models.AssetDefinition", "AssetDefinition")
+                        .WithMany("AssetTransactions")
+                        .HasForeignKey("AssetDefinitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("AssetCove.Contracts.Models.UserAsset", "UserAsset")
                         .WithMany("Transactions")
                         .HasForeignKey("UserAssetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AssetDefinition");
 
                     b.Navigation("UserAsset");
                 });
@@ -181,6 +223,11 @@ namespace AssetCove.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("Portfolio");
+                });
+
+            modelBuilder.Entity("AssetCove.Contracts.Models.AssetDefinition", b =>
+                {
+                    b.Navigation("AssetTransactions");
                 });
 
             modelBuilder.Entity("AssetCove.Contracts.Models.Portfolio", b =>

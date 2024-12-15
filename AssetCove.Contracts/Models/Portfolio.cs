@@ -15,6 +15,11 @@ public class Portfolio
     public Guid UserId { get; set; }
 
     [Required]
+    [Column(nameof(Name))]
+    [Length(3, 20,ErrorMessage = "Name of your portfolio must be in range between 3 to 20 characters")]
+    public string Name { get; set; }
+
+    [Required]
     [Column(nameof(Visibility))]
     public Visibility Visibility { get; set; }
 
