@@ -1,46 +1,88 @@
-using AssetCove.Domain.DbContexts;
+using AssetCove.Api.Constants;
+using AssetCove.Api.StartupExtensions;
+using AssetCove.Domain;
+using AssetCove.Domain.Constants;
+using AssetCove.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 
-public partial class Program
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
 {
-    private static async Task Main(string[] args)
+    options.SwaggerDoc("v1", new OpenApiInfo
     {
-        var builder = WebApplication.CreateBuilder(args);
+        Version = "v1",
+        Title = "AssetCove",
+        Description = "AssetCove",
+    });
 
+    //var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    //options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen(options =>
-        {
-            options.SwaggerDoc("v1", new OpenApiInfo
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme."
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
-                Version = "v1",
-                Title = "AssetCove",
-                Description = "AssetCove",
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    []
+                }
             });
-        });
+});
 
-        builder.Services.AddControllers();
+builder.Services.AddControllers();
 
-        builder.Services.AddDbContext<AssetCoveDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDomainServices(
+    builder.Configuration.GetConnectionString("DefaultConnection"),
+    builder.Configuration.GetSection("Jwt")
+);
+
+builder.Services
+            .AddAuthorizationBuilder()
+            .AddPolicy(AuthorizePolicies.Admin, policy => policy.RequireClaim(ClaimTypes.Role, Roles.Admin))
+            .AddPolicy(AuthorizePolicies.User, policy => policy.RequireClaim(ClaimTypes.Role, Roles.User));
 
 
-        var app = builder.Build();
+builder.Services.AddAuthenticationService(builder.Configuration);
 
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+builder.Services.AddValidatorConfiguration();
 
-        //app.UseAuthentication();
-        //app.UseAuthorization();
+//builder.Services.AddOptions().AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<CreatePortfolioCommand>());
 
-        app.MapControllers();
+builder.Services.AddScoped<IAssetCoveRepository, AssetCoveRepository>();
 
-        await app.RunAsync();
-    }
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+await app.RunAsync();
 
 public partial class Program { }
