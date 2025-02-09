@@ -4,6 +4,7 @@ using AssetCove.Domain.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AssetCove.Domain.Migrations
 {
     [DbContext(typeof(AssetCoveDbContext))]
-    partial class AssetCoveDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250209223351_UpdateUserTypeProperty")]
+    partial class UpdateUserTypeProperty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,10 +120,10 @@ namespace AssetCove.Domain.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("Name");
 
-                    b.Property<string>("Username")
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
-                        .HasColumnName("Username");
+                        .HasColumnName("UserId");
 
                     b.Property<int>("Visibility")
                         .HasColumnType("int")
