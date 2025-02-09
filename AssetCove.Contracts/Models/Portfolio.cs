@@ -11,8 +11,8 @@ public class Portfolio
     public Guid Id { get; set; }
 
     [Required]
-    [Column(nameof(UserId))]
-    public Guid UserId { get; set; }
+    [Column(nameof(Username))]
+    public string Username { get; set; }
 
     [Required]
     [Column(nameof(Name))]
@@ -28,7 +28,11 @@ public class Portfolio
     public DateTime CreatedAt { get; set; }
 
     [Column(nameof(LastUpdatedAt))]
-    public DateTime LastUpdatedAt { get; set; }
+    public DateTime? LastUpdatedAt { get; set; }
+
+    [Required]
+    [Column(nameof(IsRemoved))]
+    public bool IsRemoved { get; set; }
 
     public List<UserAsset> UserAssets { get; set; }
     public List<PortfolioShare> ShareableEmails { get; set; }

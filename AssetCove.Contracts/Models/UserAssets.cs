@@ -21,6 +21,10 @@ public class UserAsset
     [Column(nameof(LastUpdatedAt))]
     public DateTime LastUpdatedAt { get; set; }
 
+    [Required]
+    [Column(nameof(IsRemoved))]
+    public bool IsRemoved { get; set; }
+
     [ForeignKey(nameof(PortfolioId))]
     public virtual Portfolio Portfolio { get; set; }
 
