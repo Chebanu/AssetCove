@@ -1,4 +1,4 @@
-﻿namespace AssetCove.Contracts.Http.Portfolio;
+﻿namespace AssetCove.Contracts.Http.Portfolio.Requests;
 
 public class PortfolioUpdateNameRequest
 {

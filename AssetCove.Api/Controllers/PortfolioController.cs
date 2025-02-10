@@ -1,6 +1,6 @@
 ﻿using AssetCove.Contracts.Http;
 using AssetCove.Contracts.Models;
-using AssetCove.Contracts.Http.Portfolio;
+using AssetCove.Contracts.Http.Portfolio.Requests;
 
 using MediatR;
 
@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using AssetCove.Domain.Commands;
 using Microsoft.AspNetCore.Authorization;
 using FluentValidation;
-using Azure.Core;
+using AssetCove.Contracts.Http.Portfolio.Responses;
+using AssetCove.Domain.Queries;
 
 
 namespace AssetCove.Api.Controllers;
@@ -18,18 +19,65 @@ public class PortfolioController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IValidator<PortfolioCreateRequest> _createPortfolioValidator;
+    private readonly IValidator<GetUserPortfoliosRequest> _getPortfoliosValidator;
 
-    public PortfolioController(IMediator mediator, IValidator<PortfolioCreateRequest> createPortfolioValidator)
+    public PortfolioController(IMediator mediator, IValidator<PortfolioCreateRequest> createPortfolioValidator,
+                                                    IValidator<GetUserPortfoliosRequest> getPortfolioByIdValidator)
     {
         _mediator = mediator;
         _createPortfolioValidator = createPortfolioValidator;
+        _getPortfoliosValidator = getPortfolioByIdValidator;
     }
+
+    [HttpGet]
+    [Route("user/{username}/portfolios")]
+    [Authorize]
+    public async Task<IActionResult> GetPortfoliosByUsername([FromRoute] string username, CancellationToken cancellationToken = default)
+    {
+        var request = new GetUserPortfoliosRequest { Username = username };
+
+        var validationResult = await _getPortfoliosValidator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Errors = validationResult.Errors.Select(e => e.ErrorMessage).ToArray()
+            });
+        }
+
+        var portfoliosRequest = new GetUserPortfoliosQuery
+        {
+            User = User.Identity.Name,
+            Owner = username
+        };
+
+        var portfoliosResult = await _mediator.Send(portfoliosRequest, cancellationToken);
+
+        if(!portfoliosResult.Success)
+        {
+            return NotFound( new ErrorResponse
+            {
+                Errors = portfoliosResult.Errors
+            });
+        }
+
+        var response = portfoliosResult.UserPortfolioResults.Select(p => new GetPortfolioResponse
+                                                                    {
+                                                                        PortfolioId = p.PortfolioId,
+                                                                        PortfolioName = p.PortfolioName
+                                                                    }).ToList();
+
+        return Ok(response);
+    }
+
 
     [HttpGet]
     [Route("{portfolioId}")]
     [Authorize]
-    public async Task<IActionResult> GetPortfolioId([FromRoute] Guid portfolioId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetPortfolioById([FromRoute] Guid portfolioId, CancellationToken cancellationToken = default)
     {
+        
 
         return Ok();
     }

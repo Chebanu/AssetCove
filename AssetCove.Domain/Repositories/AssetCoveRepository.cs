@@ -1,5 +1,6 @@
 ﻿using AssetCove.Contracts.Models;
 using AssetCove.Domain.DbContexts;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace AssetCove.Domain.Repositories;
@@ -10,6 +11,7 @@ public interface IAssetCoveRepository
     Task<Portfolio> CreatePortfolioAsync(Portfolio portfolio, CancellationToken cancellationToken = default);
     Task<Portfolio> GetPortfolioByIdAsync(Guid portfolioId, CancellationToken cancellationToken = default);
     Task<bool> IsPortfolioByNameExistAsync(string username, string portfolioName, CancellationToken cancellationToken = default);
+    Task<List<Portfolio>> GetUserPortfoliosAsync(string owner, string user, CancellationToken cancellationToken = default);
     Task<Portfolio> UpdatePortfolioNameAsync(Portfolio portfolio, CancellationToken cancellationToken = default);
 
     //Transaction
@@ -51,8 +53,24 @@ public partial class AssetCoveRepository : IAssetCoveRepository
     public async Task<bool> IsPortfolioByNameExistAsync(string username, string portfolioName, CancellationToken cancellationToken = default)
     {
         return await _context.Portfolios
-            .AnyAsync(x => x.Username == username && x.Name == portfolioName, cancellationToken);
+            .AnyAsync(x => x.Username == username && x.Name == portfolioName && x.IsRemoved == false, cancellationToken);
     }
+
+    public async Task<List<Portfolio>> GetUserPortfoliosAsync(string owner, string user, CancellationToken cancellationToken = default)
+    {
+        return await _context.Portfolios
+            .Where(p =>
+                p.Username == owner &&
+                (
+                    p.Visibility == Visibility.Public || // публичные портфели владельца
+                    (p.Visibility == Visibility.Shared && p.ShareableEmails.Any(e => e.Email == user)) || // shared портфели, если пользователь в списке
+                    p.Username == user // если пользователь сам является владельцем
+                )
+            )
+            .ToListAsync(cancellationToken);
+    }
+
+
 
     public async Task<Portfolio> UpdatePortfolioNameAsync(Portfolio portfolio, CancellationToken cancellationToken = default)
     {

@@ -1,5 +1,5 @@
 ﻿using AssetCove.Api.Extensions;
-using AssetCove.Contracts.Http.Portfolio;
+using AssetCove.Contracts.Http.Portfolio.Requests;
 using FluentValidation;
 
 namespace AssetCove.Api.Validator.PortfolioValidator;
