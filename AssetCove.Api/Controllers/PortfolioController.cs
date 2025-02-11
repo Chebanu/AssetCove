@@ -54,19 +54,19 @@ public class PortfolioController : ControllerBase
 
         var portfoliosResult = await _mediator.Send(portfoliosRequest, cancellationToken);
 
-        if(!portfoliosResult.Success)
+        if (!portfoliosResult.Success)
         {
-            return NotFound( new ErrorResponse
+            return NotFound(new ErrorResponse
             {
                 Errors = portfoliosResult.Errors
             });
         }
 
         var response = portfoliosResult.UserPortfolioResults.Select(p => new GetPortfolioResponse
-                                                                    {
-                                                                        PortfolioId = p.PortfolioId,
-                                                                        PortfolioName = p.PortfolioName
-                                                                    }).ToList();
+        {
+            PortfolioId = p.PortfolioId,
+            PortfolioName = p.PortfolioName
+        }).ToList();
 
         return Ok(response);
     }
@@ -77,9 +77,28 @@ public class PortfolioController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetPortfolioById([FromRoute] Guid portfolioId, CancellationToken cancellationToken = default)
     {
-        
+        var request = new GetPortfolioByIdQuery
+        {
+            PortfolioId = portfolioId,
+            User = User.Identity.Name
+        };
 
-        return Ok();
+        var portfoliosResult = await _mediator.Send(request, cancellationToken);
+
+        if (!portfoliosResult.Success)
+        {
+            return NotFound(new ErrorResponse
+            {
+                Errors = portfoliosResult.Errors
+            });
+        }
+
+        return Ok(new GetPortfolioResponse
+        {
+            PortfolioId = portfolioId,
+            PortfolioName = portfoliosResult.PortfolioName,
+            PortfolioOwner = portfoliosResult.PortfolioOwner
+        });
     }
 
     [HttpPost]
@@ -144,7 +163,7 @@ public class PortfolioController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UpdatePortfolioName([FromBody] PortfolioUpdateNameRequest portfolioUpdateRequest, CancellationToken cancellationToken = default)
     {
-       //valiadation
+        //valiadation
 
 
 

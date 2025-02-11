@@ -30,15 +30,12 @@ public class UserPortfolioResult
 public class GetPortfolioQueryHandler : BaseRequestHandler<GetUserPortfoliosQuery, GetUserPortfoliosResult>
 {
     private readonly IAssetCoveRepository _repository;
-    private readonly UserManager<IdentityUser> _userManager;
 
     public GetPortfolioQueryHandler(ILogger<BaseRequestHandler<GetUserPortfoliosQuery,
                                     GetUserPortfoliosResult>> logger,
-                                    IAssetCoveRepository repository,
-                                    UserManager<IdentityUser> userManager) : base(logger)
+                                    IAssetCoveRepository repository) : base(logger)
     {
         _repository = repository;
-        _userManager = userManager;
     }
 
     protected override async Task<GetUserPortfoliosResult> HandleInternal(GetUserPortfoliosQuery request, CancellationToken cancellationToken)
