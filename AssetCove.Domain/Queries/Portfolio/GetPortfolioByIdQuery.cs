@@ -1,9 +1,11 @@
 ﻿using AssetCove.Domain.Handlers;
 using AssetCove.Domain.Repositories;
-using MediatR;
+
 using Microsoft.Extensions.Logging;
 
-namespace AssetCove.Domain.Queries;
+using MediatR;
+
+namespace AssetCove.Domain.Queries.Portfolio;
 
 public class GetPortfolioByIdQuery : IRequest<GetPortfolioByIdResult>
 {

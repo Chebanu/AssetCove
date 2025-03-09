@@ -21,7 +21,7 @@ public interface IAssetCoveRepository
 
     //UserAsset
     Task<UserAsset> CreateUserAssetAsync(UserAsset userAsset, CancellationToken cancellationToken = default);
-    Task<UserAsset> GetUserAssetAsync(Guid assetId, CancellationToken cancellationToken = default);
+    Task<UserAsset> GetUserAssetAsync(Guid assetId, string user, CancellationToken cancellationToken = default);
     Task<UserAsset> UpdateUserAssetAsync(UserAsset userAsset, CancellationToken cancellationToken = default);
 
     //Asset Definition
@@ -120,9 +120,19 @@ public partial class AssetCoveRepository : IAssetCoveRepository
 
         return userAsset;
     }
-    public async Task<UserAsset> GetUserAssetAsync(Guid assetId, CancellationToken cancellationToken = default)
+    public async Task<UserAsset> GetUserAssetAsync(Guid assetId, string user, CancellationToken cancellationToken = default)
     {
-        return await _context.UserAssets.SingleOrDefaultAsync(x => x.Id == assetId, cancellationToken);
+        return await _context.UserAssets
+            .Where(a =>
+                a.Id == assetId &&
+                a.IsRemoved == false &&
+                (
+                    a.Portfolio.Visibility == Visibility.Public ||
+                    (a.Portfolio.Visibility == Visibility.Shared && a.Portfolio.ShareableEmails.Any(e => e.Email == user)) ||
+                    a.Portfolio.Username == user
+                )
+            )
+            .SingleOrDefaultAsync(cancellationToken);
     }
 
     public async Task<UserAsset> UpdateUserAssetAsync(UserAsset userAsset, CancellationToken cancellationToken = default)

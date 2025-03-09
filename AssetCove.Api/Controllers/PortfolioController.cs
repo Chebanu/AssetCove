@@ -10,6 +10,7 @@ using FluentValidation;
 using AssetCove.Contracts.Http.Portfolio.Responses;
 using AssetCove.Domain.Queries;
 using AssetCove.Domain.Commands.Portfolios;
+using AssetCove.Domain.Queries.Portfolio;
 
 
 namespace AssetCove.Api.Controllers;

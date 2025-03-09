@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 using MediatR;
 
-namespace AssetCove.Domain.Queries;
+namespace AssetCove.Domain.Queries.Portfolio;
 
 public class GetUserPortfoliosQuery : IRequest<GetUserPortfoliosResult>
 {
