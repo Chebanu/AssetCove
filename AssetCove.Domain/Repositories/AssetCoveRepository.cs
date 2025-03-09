@@ -12,7 +12,7 @@ public interface IAssetCoveRepository
     Task<Portfolio> GetPortfolioByIdAsync(Guid portfolioId, string user, CancellationToken cancellationToken = default);
     Task<bool> IsPortfolioByNameExistAsync(string username, string portfolioName, CancellationToken cancellationToken = default);
     Task<List<Portfolio>> GetUserPortfoliosAsync(string owner, string user, CancellationToken cancellationToken = default);
-    Task<Portfolio> UpdatePortfolioNameAsync(Portfolio portfolio, CancellationToken cancellationToken = default);
+    Task<Portfolio> UpdatePortfolioAsync(Portfolio portfolio, CancellationToken cancellationToken = default);
 
     //Transaction
     Task<AssetTransaction> CreateTransactionAsync(AssetTransaction assetTransaction, CancellationToken cancellationToken = default);
@@ -54,7 +54,7 @@ public partial class AssetCoveRepository : IAssetCoveRepository
                     p.Visibility == Visibility.Public ||
                     (p.Visibility == Visibility.Shared && p.ShareableEmails.Any(e => e.Email == user)) ||
                     p.Username == user
-                )
+                ) && p.IsRemoved == false
             )
             .SingleOrDefaultAsync(cancellationToken);
     }
@@ -71,17 +71,15 @@ public partial class AssetCoveRepository : IAssetCoveRepository
             .Where(p =>
                 p.Username == owner &&
                 (
-                    p.Visibility == Visibility.Public || 
+                    p.Visibility == Visibility.Public ||
                     (p.Visibility == Visibility.Shared && p.ShareableEmails.Any(e => e.Email == user)) ||
                     p.Username == user
-                )
+                ) && p.IsRemoved == false
             )
             .ToListAsync(cancellationToken);
     }
 
-
-
-    public async Task<Portfolio> UpdatePortfolioNameAsync(Portfolio portfolio, CancellationToken cancellationToken = default)
+    public async Task<Portfolio> UpdatePortfolioAsync(Portfolio portfolio, CancellationToken cancellationToken = default)
     {
         _ = _context.Portfolios.Update(portfolio);
         _ = await _context.SaveChangesAsync(cancellationToken);

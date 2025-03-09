@@ -201,8 +201,20 @@ public class PortfolioController : ControllerBase
     [Authorize]
     public async Task<IActionResult> DeletePortfolio([FromBody] DeletePortfolioRequest deletePortfolioRequest, CancellationToken cancellationToken = default)
     {
-        //validation
+        DeletePortfolioCommand deletePortfolio = new DeletePortfolioCommand()
+        {
+            PortfolioId = deletePortfolioRequest.PortfolioId,
+            User = User.Identity.Name
+        };
 
-        return Ok();
+        var portfolioResult = await _mediator.Send(deletePortfolio, cancellationToken);
+
+        return !portfolioResult.Success ?
+            BadRequest(new ErrorResponse
+            {
+                Errors = portfolioResult.Errors
+            })
+            :
+            NoContent();
     }
 }

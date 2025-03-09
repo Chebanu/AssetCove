@@ -1,43 +1,40 @@
 ﻿using AssetCove.Domain.Handlers;
 using AssetCove.Domain.Repositories;
 
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Identity;
-
 using MediatR;
+
+using Microsoft.Extensions.Logging;
 
 namespace AssetCove.Domain.Commands.Portfolios;
 
-public class UpdatePortfolioNameCommand : IRequest<UpdatePortfolioNameResult>
+public class DeletePortfolioCommand : IRequest<DeletePortfolioResult>
 {
     public Guid PortfolioId { get; init; }
-    public string UpdatedName { get; init; }
     public string User { get; init; }
 }
 
-public class UpdatePortfolioNameResult
+public class DeletePortfolioResult
 {
-    public Guid PortfolioId { get; init; }
-    public string[] Errors { get; init; }
     public bool Success { get; init; }
+    public string[] Errors { get; init; }
 }
 
-public class UpdatePortfolioNameCommandHandler : BaseRequestHandler<UpdatePortfolioNameCommand, UpdatePortfolioNameResult>
+public class DeletePortfolioCommandHandler : BaseRequestHandler<DeletePortfolioCommand, DeletePortfolioResult>
 {
     private readonly IAssetCoveRepository _repository;
-    public UpdatePortfolioNameCommandHandler(ILogger<BaseRequestHandler<UpdatePortfolioNameCommand, UpdatePortfolioNameResult>> logger,
+    public DeletePortfolioCommandHandler(ILogger<BaseRequestHandler<DeletePortfolioCommand, DeletePortfolioResult>> logger,
                                             IAssetCoveRepository repository) : base(logger)
     {
         _repository = repository;
     }
 
-    protected override async Task<UpdatePortfolioNameResult> HandleInternal(UpdatePortfolioNameCommand request, CancellationToken cancellationToken = default)
+    protected override async Task<DeletePortfolioResult> HandleInternal(DeletePortfolioCommand request, CancellationToken cancellationToken)
     {
         var portfolio = await _repository.GetPortfolioByIdAsync(request.PortfolioId, request.User, cancellationToken);
 
         if (portfolio == null)
         {
-            return new UpdatePortfolioNameResult
+            return new DeletePortfolioResult
             {
                 Success = false,
                 Errors = ["That portfolio doesn't exist"]
@@ -46,23 +43,18 @@ public class UpdatePortfolioNameCommandHandler : BaseRequestHandler<UpdatePortfo
 
         if (portfolio.Username != request.User)
         {
-            return new UpdatePortfolioNameResult
+            return new DeletePortfolioResult
             {
                 Success = false,
                 Errors = ["You do not have permission to change portfolio's name"]
             };
         }
 
-        portfolio.Name = request.UpdatedName;
+        portfolio.IsRemoved = true;
         portfolio.LastUpdatedAt = DateTime.UtcNow;
 
         await _repository.UpdatePortfolioAsync(portfolio, cancellationToken);
 
-        return
-            new UpdatePortfolioNameResult
-            {
-                Success = true,
-                PortfolioId = request.PortfolioId
-            };
+        return new DeletePortfolioResult { Success = true };
     }
 }
