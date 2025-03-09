@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 
 using MediatR;
 
-namespace AssetCove.Domain.Commands;
+namespace AssetCove.Domain.Commands.Portfolios;
 
 public class CreatePortfolioCommand : IRequest<CreatePortfolioResult>
 {

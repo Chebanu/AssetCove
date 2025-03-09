@@ -1,4 +1,4 @@
-﻿using AssetCove.Domain.Commands;
+﻿using AssetCove.Domain.Commands.Portfolios;
 using AssetCove.Domain.Configuration;
 using AssetCove.Domain.DbContexts;
 using Microsoft.AspNetCore.Identity;

@@ -2,7 +2,7 @@
 
 namespace AssetCove.Contracts.Http.Portfolio.Requests;
 
-public class PortfolioCreateRequest
+public class CreatePortfolioRequest
 {
     public string PortfolioName { get; init; }
     public Visibility Visibility { get; init; }

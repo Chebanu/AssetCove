@@ -1,12 +1,13 @@
-﻿using AssetCove.Api.Extensions;
+﻿using FluentValidation;
+
+using AssetCove.Api.Extensions;
 using AssetCove.Contracts.Http.Portfolio.Requests;
-using FluentValidation;
 
 namespace AssetCove.Api.Validator.PortfolioValidator;
 
-public class PortfolioCreateRequestValidator : AbstractValidator<PortfolioCreateRequest>
+public class CreatePortfolioRequestValidator : AbstractValidator<CreatePortfolioRequest>
 {
-    public PortfolioCreateRequestValidator()
+    public CreatePortfolioRequestValidator()
     {
         RuleFor(x => x.PortfolioName)
             .NotNull()

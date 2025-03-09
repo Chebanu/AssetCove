@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+
 using AssetCove.Contracts.Http;
 using AssetCove.Contracts.Http.Authentication;
 using AssetCove.Api.Validator.AuthenticationValidator;
@@ -14,8 +15,9 @@ public static class ServiceValidatorConfiguration
         return services.AddScoped<IValidator<RegisterUserRequest>, RegisterUserRequestValidator>()
                         .AddScoped<IValidator<AuthenticateUserRequest>, AuthenticateUserRequestValidator>()
                         .AddScoped<IValidator<AdminUpdateUserRequest>, AdminUpdateUserRequestValidator>()
-                        .AddScoped<IValidator<PortfolioCreateRequest>, PortfolioCreateRequestValidator>()
+                        .AddScoped<IValidator<CreatePortfolioRequest>, CreatePortfolioRequestValidator>()
                         .AddScoped<IValidator<GetUserPortfoliosRequest>, GetPortfolioByUsernameRequestValidator>()
+                        .AddScoped<IValidator<UpdatePortfolioNameRequest>, UpdatePortfolioNameValidator>()
                         .AddScoped<IValidator<AuditRequest>, AuditRequestValidator>();
     }
 }

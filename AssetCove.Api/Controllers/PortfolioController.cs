@@ -5,11 +5,11 @@ using AssetCove.Contracts.Http.Portfolio.Requests;
 using MediatR;
 
 using Microsoft.AspNetCore.Mvc;
-using AssetCove.Domain.Commands;
 using Microsoft.AspNetCore.Authorization;
 using FluentValidation;
 using AssetCove.Contracts.Http.Portfolio.Responses;
 using AssetCove.Domain.Queries;
+using AssetCove.Domain.Commands.Portfolios;
 
 
 namespace AssetCove.Api.Controllers;
@@ -18,15 +18,18 @@ namespace AssetCove.Api.Controllers;
 public class PortfolioController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly IValidator<PortfolioCreateRequest> _createPortfolioValidator;
+    private readonly IValidator<CreatePortfolioRequest> _createPortfolioValidator;
     private readonly IValidator<GetUserPortfoliosRequest> _getPortfoliosValidator;
+    private readonly IValidator<UpdatePortfolioNameRequest> _updatePortfolioNameValidator;
 
-    public PortfolioController(IMediator mediator, IValidator<PortfolioCreateRequest> createPortfolioValidator,
-                                                    IValidator<GetUserPortfoliosRequest> getPortfolioByIdValidator)
+    public PortfolioController(IMediator mediator, IValidator<CreatePortfolioRequest> createPortfolioValidator,
+                                                    IValidator<GetUserPortfoliosRequest> getPortfolioByIdValidator,
+        IValidator<UpdatePortfolioNameRequest> updatePortfolioNameValidator)
     {
         _mediator = mediator;
         _createPortfolioValidator = createPortfolioValidator;
         _getPortfoliosValidator = getPortfolioByIdValidator;
+        _updatePortfolioNameValidator = updatePortfolioNameValidator;
     }
 
     [HttpGet]
@@ -104,7 +107,7 @@ public class PortfolioController : ControllerBase
     [HttpPost]
     [Route("")]
     [Authorize]
-    public async Task<IActionResult> CreatePortfolio([FromBody] PortfolioCreateRequest portfolioRequest,
+    public async Task<IActionResult> CreatePortfolio([FromBody] CreatePortfolioRequest portfolioRequest,
                                                         CancellationToken cancellationToken = default)
     {
         var validationResult = await _createPortfolioValidator.ValidateAsync(portfolioRequest, cancellationToken);
@@ -161,13 +164,36 @@ public class PortfolioController : ControllerBase
     [HttpPut]
     [Route("")]
     [Authorize]
-    public async Task<IActionResult> UpdatePortfolioName([FromBody] PortfolioUpdateNameRequest portfolioUpdateRequest, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> UpdatePortfolioName([FromBody] UpdatePortfolioNameRequest portfolioUpdateRequest,
+                                                            CancellationToken cancellationToken = default)
     {
-        //valiadation
+        var validationResult = await _updatePortfolioNameValidator.ValidateAsync(portfolioUpdateRequest, cancellationToken);
+
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Errors = validationResult.Errors.Select(e => e.ErrorMessage).ToArray()
+            });
+        }
+
+        var updatePortfolio = new UpdatePortfolioNameCommand
+        {
+            PortfolioId = portfolioUpdateRequest.PortfolioId,
+            UpdatedName = portfolioUpdateRequest.Name,
+            User = User.Identity.Name,
+        };
 
 
+        var portfolioResult = await _mediator.Send(updatePortfolio, cancellationToken);
 
-        return Ok();
+        return !portfolioResult.Success ?
+            BadRequest(new ErrorResponse
+            {
+                Errors = portfolioResult.Errors
+            })
+            :
+            NoContent();
     }
 
     [HttpPut]
